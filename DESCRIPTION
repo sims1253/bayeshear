@@ -1,7 +1,7 @@
 Package: postcrit
 Type: Package
 Title: Calculate Criteria for Bayesian Models
-Version: 0.1.0.9000
+Version: 0.2.0.9000
 Authors@R:
     c(person("Maximilian", "Scholz", email = "research.scholz@mailbox.org",
              role = c("aut", "cre")))
@@ -16,4 +16,4 @@ Imports:
     posterior,
     stats,
     matrixStats
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.2
