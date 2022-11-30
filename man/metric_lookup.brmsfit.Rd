@@ -8,7 +8,11 @@
   identifier,
   fit,
   posterior_draws = NULL,
+  posterior_variable_matrix = NULL,
   testing_data = NULL,
+  variables = NULL,
+  references = NULL,
+  threshold = 0.7,
   ...
 )
 }

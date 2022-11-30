@@ -15,10 +15,14 @@ metric_lookup <- function(identifier, ...) {
 metric_lookup.brmsfit <- function(identifier,
                                   fit,
                                   posterior_draws = NULL,
+                                  posterior_variable_matrix = NULL,
                                   testing_data = NULL,
+                                  variables = NULL,
+                                  references = NULL,
+                                  threshold = 0.7,
                                   ...) {
   if (is.null(posterior_draws)) {
-    posterior_draws <- posterior::extract_variable_matrix(fit, variable = "b_x")
+    posterior_draws <- posterior::as_draws(fit)
   }
 
   if (grepl("pq_", identifier)) {
@@ -26,20 +30,50 @@ metric_lookup.brmsfit <- function(identifier,
     return(unname(posterior_quantiles(posterior_draws, prob)))
   } else {
     switch(identifier,
-      "divergents" = return(divergents(fit)),
-      "rstar_w" = return(p_rstar(fit)),
-      "pareto_k" = return(bad_pareto_ks(fit, ...)),
+      # Variable summaries
+      "v_mean" = return(variable_summary(posterior_draws, variables, mean)),
+      "v_sd" = return(variable_summary(posterior_draws, variables, sd)),
+      "v_median" = return(variable_summary(posterior_draws, variables, median)),
+      "v_mad" = return(variable_summary(posterior_draws, variables, mad)),
+      "v_pos_prob" = return(
+        variable_summary(posterior_draws, variables, variable_pos_prob)
+      ),
+      # Variable distance measures
+      "v_bias" = return(
+        variable_distance(
+          posterior_draws,
+          variables,
+          references,
+          variable_bias
+        )
+      ),
+      "v_rmse" = return(
+        variable_distance(posterior_draws, variables, references, variable_rmse)
+      ),
+      "v_mae" = return(
+        variable_distance(posterior_draws, variables, references, variable_mae)
+      ),
+      "v_mse" = return(
+        variable_distance(posterior_draws, variables, references, variable_mse)
+      ),
+      "v_percentile" = return(
+        variable_distance(
+          posterior_draws,
+          variables, references,
+          variable_percentile
+        )
+      ),
+      # Global MCMC Diagnostics
+      "divergent_transitions" = return(divergent_transitions(fit)),
+      "rstar_w" = return(rstar_w(posterior_draws)),
+      "pareto_k" = return(bad_pareto_ks(fit, threshold)),
       "time" = return(sampling_time(fit)),
-      "rhat" = return(posterior::rhat(posterior_draws)),
-      "ess_bulk" = return(posterior::ess_bulk(posterior_draws)),
-      "ess_tail" = return(posterior::ess_tail(posterior_draws)),
-      "q_true" = return(q_true(posterior_draws, ...)),
-      "bias" = return(p_bias(posterior_draws, ...)),
-      "rmse_s" = return(rmse_s(posterior_draws, ...)),
-      "mae_s" = return(mae_s(posterior_draws, ...)),
-      "p_mean" = return(p_mean(posterior_draws)),
-      "p_sd" = return(p_sd(posterior_draws)),
-      "pos_prob" = return(pos_prob(posterior_draws)),
+      # Variable MCMC Diagnostics
+      "rhat" = return(rhat(posterior_draws, variables)),
+      "ess_bulk" = return(ess_bulk(posterior_draws, variables)),
+      "ess_tail" = return(posterior::ess_tail(posterior_draws, variables)),
+
+      # Predictive Metrics
       "elpd_loo" = return(elpd_loo_handler(fit)),
       "elpd_newdata" = return(elpd_newdata(fit, testing_data)),
       "rmse_loo" = return(rmse_loo(fit, ...)),
@@ -49,8 +83,9 @@ metric_lookup.brmsfit <- function(identifier,
       "residuals" = return(
         list(residuals = residuals(fit, method = "posterior_predict")[, 1])
       ),
-      "y" = return(list(brms::get_y(fit))),
-      "ppred" = return(list(colMeans(brms::posterior_predict(fit))))
+      "ppred" = return(list(colMeans(brms::posterior_predict(fit)))),
+      # Other
+      "y" = return(list(get_y(fit)))
     )
   }
 }

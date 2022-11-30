@@ -2,18 +2,21 @@ Package: postcrit
 Type: Package
 Title: Calculate Criteria for Bayesian Models
 Version: 0.2.0.9000
+URL: https://github.com/sims1253/postcrit
+BugReports: https://github.com/sims1253/postcrit/issues
 Authors@R:
     c(person("Maximilian", "Scholz", email = "research.scholz@mailbox.org",
              role = c("aut", "cre")))
 Maintainer: Maximilian Scholz <research.scholz@mailbox.org>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
-    brms,
     posterior,
     stats,
-    matrixStats
+    matrixStats,
+    purrr,
+    brms
 RoxygenNote: 7.2.2

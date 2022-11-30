@@ -46,7 +46,12 @@ custom_loo_object <- function(pointwise_criterion,
 #'
 #' @examples
 custom_loo_compare <- function(loo_object_matrix, predictive_metrics) {
-  final_result <- data.frame(matrix(nrow = length(loo_object_matrix), ncol = 2 * length(predictive_metrics)))
+  final_result <- data.frame(
+    matrix(
+      nrow = length(loo_object_matrix),
+      ncol = 2 * length(predictive_metrics)
+    )
+  )
   colnames(final_result) <- unlist(lapply(predictive_metrics, function(x) {
     c(paste0(x, "_delta"), paste0(x, "_se_delta"))
   }))

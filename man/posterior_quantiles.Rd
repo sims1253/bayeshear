@@ -7,9 +7,8 @@
 posterior_quantiles(x, variable, probs, ...)
 }
 \arguments{
-\item{x}{brmsfit object, posterior draws list from
-\code{\link[posterior]{as_draws}} or matrix from
-\code{\link[posterior]{extract_variable_matrix}}.}
+\item{x}{brmsfit objec or posterior draws object, eg. from
+\code{\link[posterior]{as_draws}}.}
 
 \item{variable}{Name of the parameter of interest.}
 

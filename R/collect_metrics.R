@@ -61,7 +61,10 @@ collect_metrics.brmsfit <- function(fit,
   posterior_draws <- posterior::extract_variable_matrix(fit, variable = "b_x")
 
   loo_objects <- vector(mode = "list", length = length(predictive_metrics))
-  predictive_results <- vector(mode = "list", length = length(predictive_metrics))
+  predictive_results <- vector(
+    mode = "list",
+    length = length(predictive_metrics)
+  )
 
   psis_object <- NULL
   for (i in seq_along(predictive_metrics)) {
@@ -102,7 +105,8 @@ collect_metrics.brmsfit <- function(fit,
 
   return(
     list(
-      numeric_results = unlist(c(numeric_result_list, predictive_results),
+      numeric_results = unlist(
+        c(numeric_result_list, predictive_results),
         recursive = FALSE
       ),
       loo_objects = loo_objects
