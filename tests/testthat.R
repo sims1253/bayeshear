@@ -1,4 +1,4 @@
 library(testthat)
-library(postcrit)
+library(bayeshear)
 
-test_check("postcrit")
+test_check("bayeshear")
