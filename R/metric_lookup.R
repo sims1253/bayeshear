@@ -80,6 +80,7 @@ metric_lookup.brmsfit <- function(identifier,
       "rmse_newdata" = return(rmse_newdata(fit, testing_data)),
       "r2_loo" = return(r2_loo(fit, ...)),
       "r2_newdata" = return(r2_newdata(fit, testing_data)),
+
       "residuals" = return(
         list(residuals = residuals(fit, method = "posterior_predict")[, 1])
       ),
