@@ -3,14 +3,15 @@
 #' @param x brmsfit objec or posterior draws object, eg. from
 #'          \code{\link[posterior]{as_draws}}.
 #' @param variable Name of the parameter of interest.
-#' @param probs Vector of quantiles, passed to \code{\link{quantiles}} function.
-#' @param ... Additional arguments passed to \code{\link{quantiles}}.
+#' @param probs Vector of quantiles, passed to \code{\link{quantile}}
+#'              function.
+#' @param ... Additional arguments passed to \code{\link{quantile}}.
 #'
 #' @return Named list of quantiles.
 #' @export posterior_quantiles posterior_quantiles.draws posterior_quantiles.brmsfit
 #'
 #' @examples
-#' fit <- brms::brm(y ~ 1, data = rnorm(1000))
+#' fit <- brms::brm(y ~ 1, data = list(y = rnorm(1000)))
 #' posterior_quantiles(fit, "b_Intercept", c(0.025, 0.5, 0.975))
 #'
 posterior_quantiles <- function(x, variable, probs, ...) {
@@ -18,12 +19,12 @@ posterior_quantiles <- function(x, variable, probs, ...) {
 }
 
 #' @export
-posterior_quantiles.brmsfit <- function(fit, variable, probs, ...) {
+posterior_quantiles.brmsfit <- function(x, variable, probs, ...) {
   return(
     do.call(
       quantile,
       c(
-        list(posterior::extract_variable_matrix(fit, variable = variable)),
+        list(posterior::extract_variable_matrix(x, variable = variable)),
         list(probs),
         list(...)
       )
@@ -32,12 +33,12 @@ posterior_quantiles.brmsfit <- function(fit, variable, probs, ...) {
 }
 
 #' @export
-posterior_quantiles.draws <- function(posterior_draws, variable, probs, ...) {
+posterior_quantiles.draws <- function(x, variable, probs, ...) {
   return(
     do.call(
       quantile,
       c(list(posterior::extract_variable_matrix(
-        posterior_draws,
+        x,
         variable = variable
       )), list(probs), list(...))
     )

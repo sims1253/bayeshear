@@ -2,10 +2,28 @@ test_that("variable_distance", {
   # Test that the function runs without problem
   fit <- readRDS("model_files/normal_identity_intercept.RDS")
   expect_no_error(variable_distance(fit, "b_Intercept", 0, variable_rmse))
-  expect_no_error(variable_distance(fit, c("b_Intercept", "sigma"), c(0, 1), variable_bias))
-  expect_no_error(variable_distance(posterior::as_draws(fit), "b_Intercept", 0, variable_mse))
-  expect_no_error(variable_distance(posterior::as_draws(fit), c("b_Intercept", "sigma"), c(0, 1), variable_mae))
-  expect_no_error(variable_distance(posterior::as_draws(fit), "b_Intercept", 0, variable_percentile))
+  expect_no_error(
+    variable_distance(fit, c("b_Intercept", "sigma"), c(0, 1), variable_bias)
+  )
+  expect_no_error(
+    variable_distance(posterior::as_draws(fit), "b_Intercept", 0, variable_mse)
+  )
+  expect_no_error(
+    variable_distance(
+      posterior::as_draws(fit),
+      c("b_Intercept", "sigma"),
+      c(0, 1),
+      variable_mae
+    )
+  )
+  expect_no_error(
+    variable_distance(
+      posterior::as_draws(fit),
+      "b_Intercept",
+      0,
+      variable_percentile
+    )
+  )
 
   # Test for value
   a <- list("1" = list(a = rep(c(-1, 0, 1), 4)))

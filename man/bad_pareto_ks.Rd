@@ -4,13 +4,15 @@
 \alias{bad_pareto_ks}
 \title{Bad pareto-khat estimate values}
 \usage{
-bad_pareto_ks(fit, threshold = 0.7)
+bad_pareto_ks(x, threshold = 0.7, absolute = FALSE, ...)
 }
 \arguments{
-\item{threshold}{Threshold value to cound pareto-khat value as bad.
+\item{x}{brmsfit object or psis object}
+
+\item{threshold}{Threshold value to count pareto-khat value as bad.
 Default = 0.7.}
 
-\item{x}{brmsfit object or psis object}
+\item{...}{Potential future parameters.}
 }
 \value{
 Number of bad pareto-khat estimate values

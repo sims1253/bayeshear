@@ -78,6 +78,7 @@ variable_percentile <- function(draws, reference) {
 #'
 #' @param x brmsfit object or posterior draws object, eg. from
 #'          \code{\link[posterior]{as_draws}}.
+#' @param variables Vector of variable names of interest.
 #' @param references Vector of reference values for the variables of interest.
 #' @param fun Distance function, eg \code{\link{variable_rmse}}.
 #'
@@ -86,18 +87,23 @@ variable_percentile <- function(draws, reference) {
 #'
 #' @examples
 #' fit <- brms::brm(y ~ 1, data = rnorm(1000))
-#' variable_distance(fit, c("b_Intercept", "sigma"), c(0, 1), fun = variable_bias)
+#' variable_distance(
+#'   fit,
+#'   c("b_Intercept", "sigma"),
+#'   c(0, 1),
+#'   fun = variable_bias
+#' )
 variable_distance <- function(x, variables, references, fun) {
   UseMethod("variable_distance")
 }
 
 #' @export
-variable_distance.brmsfit <- function(fit, variables, references, fun) {
+variable_distance.brmsfit <- function(x, variables, references, fun) {
   out <- as.list(purrr::map2_dbl(
     variables,
     references,
     get_distance,
-    draws = posterior::as_draws(fit),
+    draws = posterior::as_draws(x),
     fun = fun
   ))
   names(out) <- variables
@@ -105,12 +111,12 @@ variable_distance.brmsfit <- function(fit, variables, references, fun) {
 }
 
 #' @export
-variable_distance.draws <- function(draws, variables, references, fun) {
+variable_distance.draws <- function(x, variables, references, fun) {
   out <- as.list(purrr::map2_dbl(
     variables,
     references,
     get_distance,
-    draws = draws,
+    draws = x,
     fun = fun
   ))
   names(out) <- variables

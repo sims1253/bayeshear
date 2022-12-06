@@ -2,7 +2,7 @@
 #' for compatibility.
 #'
 #' LOO currently has hardcoded expectations of elpd as part of loo objects
-#' so to use loo objects, we have to disguise other criterions as elpd.
+#' so to use loo objects, we have to disguise other criteria as elpd.
 #'
 #' @param pointwise_criterion vector of criterion values for each observation
 #' @param psis_object \code{brms:::.psis} object for psis diagnostics
@@ -61,7 +61,7 @@ custom_loo_compare <- function(loo_object_matrix, predictive_metrics) {
   for (i in seq_along(predictive_metrics)) {
     metric <- predictive_metrics[[i]]
 
-    loo_result <- loo_compare(lapply(loo_object_matrix, function(x) {
+    loo_result <- loo::loo_compare(lapply(loo_object_matrix, function(x) {
       x[[i]]
     }))
     deltas <- numeric(length = length(index))

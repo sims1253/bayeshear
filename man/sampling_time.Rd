@@ -4,10 +4,15 @@
 \alias{sampling_time}
 \title{MCMC sampling times}
 \usage{
-sampling_time(fit)
+sampling_time(fit, absolute = FALSE, ...)
 }
 \arguments{
-\item{fit}{brmsfit object}
+\item{fit}{An brmsfit or stanfit object.}
+
+\item{absolute}{TRUE if the absolute times should be returned, FALSE
+(default) if time per sample should be returned.}
+
+\item{...}{Potential future parameters.}
 }
 \value{
 List containing warmup and sampling time
@@ -18,5 +23,5 @@ MCMC sampling times
 \examples{
 fit <- brms::brm(y ~ 1, data = list(y = rnorm(1000)))
 #' fit <- brms::brm(y ~ 1, data = list(y = rnorm(1000)))
-bad_pareto_ks(fit)(fit)
+bad_pareto_ks(fit)
 }

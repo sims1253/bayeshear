@@ -9,11 +9,14 @@
 \arguments{
 \item{x}{Any non-supported fit object.}
 
-\item{...}{}
+\item{...}{Further arguments passed to standata.}
 }
 \value{
 Warning that the fit model type is not supported.
 }
 \description{
 Rhat convergence diagnostic
+}
+\examples{
+testthat::expect_error(get_y(c(1, 2, 3)))
 }

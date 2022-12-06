@@ -20,5 +20,5 @@ R^2 for the given y and yrep vectors
 If psis-weights are supplied, the corresponding psis-R^2 is returned.
 }
 \examples{
-r2(c(1:10), c(5:15))
+r2(c(1:10), c(5:14))
 }

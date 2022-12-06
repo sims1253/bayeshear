@@ -13,10 +13,17 @@ Description: More about what it does (maybe more than one line)
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Depends:
+    R (>= 3.5.0),
 Imports:
     posterior,
+    loo,
     stats,
     matrixStats,
     purrr,
     brms
+Suggests:
+    caret (>= 6.0.84),
+    randomForest (>= 4.6.14),
+    testthat (>= 3.1.0)
 RoxygenNote: 7.2.2

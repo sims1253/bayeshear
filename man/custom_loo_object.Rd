@@ -17,5 +17,5 @@ a loo object, containing a criterion, disguised as elpd
 }
 \description{
 LOO currently has hardcoded expectations of elpd as part of loo objects
-so to use loo objects, we have to disguise other criterions as elpd.
+so to use loo objects, we have to disguise other criteria as elpd.
 }

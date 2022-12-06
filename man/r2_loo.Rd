@@ -9,7 +9,7 @@ r2_loo(fit, psis_object = NULL)
 \arguments{
 \item{fit}{A brmsfit object.}
 
-\item{psis_object}{}
+\item{psis_object}{Optional psis object to prevent recalculation.}
 }
 \value{
 Named list with R² estimate, standard error and pointwise estimate.

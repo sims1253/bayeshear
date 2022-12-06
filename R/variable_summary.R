@@ -31,11 +31,11 @@ variable_summary <- function(x, variables, fun) {
 }
 
 #' @export
-variable_summary.brmsfit <- function(fit, variables, fun) {
+variable_summary.brmsfit <- function(x, variables, fun) {
   out <- lapply(
     variables,
     get_summary,
-    draws = posterior::as_draws(fit),
+    draws = posterior::as_draws(x),
     fun = fun
   )
   names(out) <- variables
@@ -43,11 +43,11 @@ variable_summary.brmsfit <- function(fit, variables, fun) {
 }
 
 #' @export
-variable_summary.draws <- function(draws, variables, fun) {
+variable_summary.draws <- function(x, variables, fun) {
   out <- lapply(
     variables,
     get_summary,
-    draws = draws,
+    draws = x,
     fun = fun
   )
   names(out) <- variables

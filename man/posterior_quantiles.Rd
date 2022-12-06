@@ -12,9 +12,10 @@ posterior_quantiles(x, variable, probs, ...)
 
 \item{variable}{Name of the parameter of interest.}
 
-\item{probs}{Vector of quantiles, passed to \code{\link{quantiles}} function.}
+\item{probs}{Vector of quantiles, passed to \code{\link{quantile}}
+function.}
 
-\item{...}{Additional arguments passed to \code{\link{quantiles}}.}
+\item{...}{Additional arguments passed to \code{\link{quantile}}.}
 }
 \value{
 Named list of quantiles.
@@ -23,7 +24,7 @@ Named list of quantiles.
 Calculate quantiles based on posterior samples for a given parameter.
 }
 \examples{
-fit <- brms::brm(y ~ 1, data = rnorm(1000))
+fit <- brms::brm(y ~ 1, data = list(y = rnorm(1000)))
 posterior_quantiles(fit, "b_Intercept", c(0.025, 0.5, 0.975))
 
 }

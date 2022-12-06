@@ -4,10 +4,16 @@
 \alias{divergent_transitions}
 \title{Return number of divergent transitions}
 \usage{
-divergent_transitions(fit)
+divergent_transitions(fit, absolute = FALSE, ...)
 }
 \arguments{
-\item{fit}{brmsfit object}
+\item{fit}{An brmsfit or stanfit object.}
+
+\item{absolute}{True if the number of divergent transitions should be
+returned. Otherwise the fraction of divergent transitons to
+total post-warmup samples is returned as default.}
+
+\item{...}{Potential future arguments.}
 }
 \value{
 Number of divergent transitions

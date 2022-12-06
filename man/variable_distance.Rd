@@ -11,6 +11,8 @@ variable_distance(x, variables, references, fun)
 \item{x}{brmsfit object or posterior draws object, eg. from
 \code{\link[posterior]{as_draws}}.}
 
+\item{variables}{Vector of variable names of interest.}
+
 \item{references}{Vector of reference values for the variables of interest.}
 
 \item{fun}{Distance function, eg \code{\link{variable_rmse}}.}
@@ -24,5 +26,10 @@ reference value.
 }
 \examples{
 fit <- brms::brm(y ~ 1, data = rnorm(1000))
-variable_distance(fit, c("b_Intercept", "sigma"), c(0, 1), fun = variable_bias)
+variable_distance(
+  fit,
+  c("b_Intercept", "sigma"),
+  c(0, 1),
+  fun = variable_bias
+)
 }

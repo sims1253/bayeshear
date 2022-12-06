@@ -24,12 +24,12 @@ elpd_loo.brmsfit <- function(fit, ...) {
   return(
     list(
       "p_loo" = loo_object$estimates[2, 1],
-      "pointwise_p_loo" = loo_object$pointwise[,3],
+      "pointwise_p_loo" = loo_object$pointwise[, 3],
       "se_p_loo" = loo_object$estimates[2, 2],
       "elpd_loo" = loo_object$estimates[1, 1],
-      "pointwise_elpd_loo" = loo_object$pointwise[,1],
+      "pointwise_elpd_loo" = loo_object$pointwise[, 1],
       "se_elpd_loo" = loo_object$estimates[1, 2],
-      "pointwise_mcse_elpd_loo" = loo_object$pointwise[,2]
+      "pointwise_mcse_elpd_loo" = loo_object$pointwise[, 2]
     )
   )
 }
@@ -87,7 +87,7 @@ rmse_loo.brmsfit <- function(fit, psis_object = NULL) {
   }
   pointwise_rmse <- rmse(
     y = brms::get_y(fit),
-    yrep = posterior_predict(fit, fit$data),
+    yrep = brms::posterior_predict(fit, fit$data),
     weights = exp(psis_object$log_weights)
   )
   return(
@@ -160,7 +160,7 @@ rmse <- function(y, yrep, weights = NULL) {
 #' PSIS-loo R²
 #'
 #' @param fit A brmsfit object.
-#' @param psis_object
+#' @param psis_object Optional psis object to prevent recalculation.
 #'
 #' @return Named list with R² estimate, standard error and pointwise estimate.
 #' @export r2_loo r2_loo.brmsfit
@@ -234,7 +234,7 @@ r2_newdata.brmsfit <- function(fit, newdata) {
 #' @export
 #'
 #' @examples
-#' r2(c(1:10), c(5:15))
+#' r2(c(1:10), c(5:14))
 r2 <- function(y, yrep, weights = NULL) {
   ss_y <- sum((y - mean(y))^2)
   pointwise_loo_r2 <- vector(mode = "numeric", length = length(y))
