@@ -19,7 +19,7 @@ divergent_transitions <- function(fit, absolute = FALSE, ...) {
 #' @export
 divergent_transitions.brmsfit <- function(fit, absolute = FALSE, ...) {
   # Simply extract the stanfit object and pass it along
-    divergent_transitions(fit$fit, absolute, ...)
+  divergent_transitions(fit$fit, absolute, ...)
 }
 
 #' @export
@@ -111,7 +111,7 @@ pareto_k_values.psis <- function(x) {
 #' #' fit <- brms::brm(y ~ 1, data = list(y = rnorm(1000)))
 #' bad_pareto_ks(fit)
 sampling_time <- function(fit, absolute = FALSE, ...) {
- UseMethod("sampling_time")
+  UseMethod("sampling_time")
 }
 
 #' @export

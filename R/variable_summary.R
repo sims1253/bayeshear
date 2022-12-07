@@ -19,6 +19,7 @@ variable_pos_prob <- function(draws) {
 #'          \code{\link[posterior]{as_draws}}
 #' @param variables Vector of variable names of interest.
 #' @param fun Summary function, eg \code{\link{mean}}.
+#' @param ... Potential future parameters.
 #'
 #' @return The calculated summary of the posterior.
 #' @export variable_summary variable_summary.draws variable_summary.brmsfit
@@ -26,12 +27,12 @@ variable_pos_prob <- function(draws) {
 #' @examples
 #' fit <- brms::brm(y ~ 1, data = rnorm(1000))
 #' variable_summary(fit, c("b_Intercept", "sigma"), fun = mean)
-variable_summary <- function(x, variables, fun) {
+variable_summary <- function(x, variables, fun, ...) {
   UseMethod("variable_summary")
 }
 
 #' @export
-variable_summary.brmsfit <- function(x, variables, fun) {
+variable_summary.brmsfit <- function(x, variables, fun, ...) {
   out <- lapply(
     variables,
     get_summary,
@@ -43,7 +44,7 @@ variable_summary.brmsfit <- function(x, variables, fun) {
 }
 
 #' @export
-variable_summary.draws <- function(x, variables, fun) {
+variable_summary.draws <- function(x, variables, fun, ...) {
   out <- lapply(
     variables,
     get_summary,
@@ -56,7 +57,7 @@ variable_summary.draws <- function(x, variables, fun) {
 
 
 # Internal
-#------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 get_summary <- function(variable, draws, fun) {
   return(
     do.call(

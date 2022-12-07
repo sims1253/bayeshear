@@ -4,7 +4,7 @@
 \alias{variable_summary}
 \title{Calculate a summary statistic of the posterior for a given variable.}
 \usage{
-variable_summary(x, variables, fun)
+variable_summary(x, variables, fun, ...)
 }
 \arguments{
 \item{x}{brmsfit object or posterior draws object, eg. from
@@ -13,6 +13,8 @@ variable_summary(x, variables, fun)
 \item{variables}{Vector of variable names of interest.}
 
 \item{fun}{Summary function, eg \code{\link{mean}}.}
+
+\item{...}{Potential future parameters.}
 }
 \value{
 The calculated summary of the posterior.

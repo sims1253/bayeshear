@@ -4,13 +4,13 @@
 \alias{posterior_quantiles}
 \title{Calculate quantiles based on posterior samples for a given parameter.}
 \usage{
-posterior_quantiles(x, variable, probs, ...)
+posterior_quantiles(x, variables, probs, ...)
 }
 \arguments{
-\item{x}{brmsfit objec or posterior draws object, eg. from
-\code{\link[posterior]{as_draws}}.}
+\item{x}{A fit object supported by \code{\link[posterior]{as_draws}} or a
+posterior draws object, eg. from \code{\link[posterior]{as_draws}}.}
 
-\item{variable}{Name of the parameter of interest.}
+\item{variables}{Vector of variable names of interest.}
 
 \item{probs}{Vector of quantiles, passed to \code{\link{quantile}}
 function.}
