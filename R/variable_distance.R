@@ -69,7 +69,7 @@ variable_mse <- function(draws, reference) {
 #' @examples
 #' fit <- brms::brm(y ~ 1, data = list(y = rnorm(1000)))
 #' variable_mse(posterior::extract_variable(fit, "b_Intercept"), 0)
-variable_percentile <- function(draws, reference) {
+variable_true_percentile <- function(draws, reference) {
   return(length(which(draws < reference)) / length(draws))
 }
 
