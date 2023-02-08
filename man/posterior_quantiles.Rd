@@ -2,15 +2,29 @@
 % Please edit documentation in R/posterior_quantiles.R
 \name{posterior_quantiles}
 \alias{posterior_quantiles}
-\title{Title}
+\title{Calculate quantiles based on posterior samples for a given parameter.}
 \usage{
-posterior_quantiles(posterior_draws, prob)
+posterior_quantiles(x, variables, probs, ...)
 }
 \arguments{
-\item{posterior_draws}{posterior::extract_variable_matrix for relevant parameter}
+\item{x}{A fit object supported by \code{\link[posterior]{as_draws}} or a
+posterior draws object, eg. from \code{\link[posterior]{as_draws}}.}
 
-\item{prob}{Quantile}
+\item{variables}{Vector of variable names of interest.}
+
+\item{probs}{Vector of quantiles, passed to \code{\link{quantile}}
+function.}
+
+\item{...}{Additional arguments passed to \code{\link{quantile}}.}
+}
+\value{
+Named list of quantiles.
 }
 \description{
-Title
+Calculate quantiles based on posterior samples for a given parameter.
+}
+\examples{
+fit <- brms::brm(y ~ 1, data = list(y = rnorm(1000)))
+posterior_quantiles(fit, "b_Intercept", c(0.025, 0.5, 0.975))
+
 }
