@@ -26,4 +26,4 @@ Suggests:
     caret (>= 6.0.84),
     randomForest (>= 4.6.14),
     testthat (>= 3.1.0)
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
