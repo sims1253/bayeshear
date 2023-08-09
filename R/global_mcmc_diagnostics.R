@@ -145,3 +145,30 @@ sampling_time.stanfit <- function(fit, absolute = FALSE, ...) {
     )
   }
 }
+
+#' Post warmup samples
+#'
+#' @param fit An brmsfit or stanfit object.
+#' @param ... Potential future parameters.
+#'
+#' @return The total number of post-warmup samples.
+#' @export post_warmup_samples post_warmup_samples.brmsfit post_warmup_samples.stanfit
+#'
+#' @examples
+#' post_warmup_samples(brms::brm(y ~ 1, data = list(y = rnorm(100)), iter = 500))
+post_warmup_samples <- function(fit, ...) {
+  UseMethod("post_warmup_samples")
+}
+
+#' @export
+post_warmup_samples.brmsfit <- function(fit, ...) {
+  post_warmup_samples(fit$fit, ...)
+}
+
+#' @export
+post_warmup_samples.stanfit <- function(fit, ...) {
+  return(
+    (fit@sim$iter - fit@sim$warmup) /
+      fit@sim$thin * fit@sim$chains
+  )
+}
