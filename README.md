@@ -1,6 +1,6 @@
 # bayeshear
 
-bayeshear is an R package of metrics for models fitted with brms and evaluated with loo. It was written in 2023 for the simulation package [bayesim](https://github.com/sims1253/bayesim).
+bayeshear is an R package of metrics for models fitted with brms and evaluated with loo. It was written in 2022 and 2023 for the simulation package [bayesim](https://github.com/sims1253/bayesim).
 
 ## Status
 
@@ -8,27 +8,27 @@ bayeshear is retired. Nobody maintains it, and it will get no fixes. The reposit
 
 ## Wrong results
 
-In every version up to and including 0.3.0.9000, `rmse_loo()`, `rmse_newdata()`, `r2_loo()`, `r2_newdata()` and `r2()` return wrong values. If you published numbers from these functions, recompute them with the replacements below.
+`rmse_loo()`, `rmse_newdata()`, `r2_loo()`, `r2_newdata()` and `r2()` return wrong values in every version that has them, from the first commit in June 2022 to 0.3.0.9000. If you published numbers from these functions, recompute them with the replacements below.
 
 The numbers in this section come from one reproduction: 1,000 observations from a standard normal distribution, an intercept-only normal model (`brm(y ~ 1)`, 4 chains, 4,000 draws), and 1,000 new observations from the same distribution. The model is correct for these data. It used brms 2.23.0, loo 2.10.1 and posterior 1.7.0.
 
-`rmse_loo()` and `rmse_newdata()` return a sum, not a root mean squared error. For each observation they compute the RMSE of the posterior predictive draws, and those draws include the observation noise. Then they add these values over all observations. The result grows with the number of observations and is never close to the RMSE of the predictions.
+`rmse_loo()` and `rmse_newdata()` do not return a root mean squared error. For each observation they compute the RMSE of the posterior predictive draws, which include the observation noise, and then add these values over all observations. The result grows with the number of observations. Since commit 46d544a (1 December 2022), including version 0.3.0.9000, the functions return this sum. Before that commit, in version 0.1.0.9000 and the first commits of 0.2.0.9000, they returned the negative of the sum.
 
 | Function | bayeshear | Correct value | Source of the correct value |
 |---|---|---|---|
-| `rmse_loo()` | 1,402 | 1.04 | `loo::loo_predictive_metric()` with `posterior_epred()` |
+| `rmse_loo()` | 1,402 | 1.04 | `loo::loo_predictive_metric()`, see the code below the replacement table |
 | `rmse_newdata()` | 1,405 | 1.04 | RMSE of the posterior mean prediction |
 
-`rmse_newdata()` also reads the response from `newdata$y`, so it stops with an error, or uses the wrong column, when the response has a different name. `r2_newdata()` also reads `newdata$y`.
+`rmse_newdata()` and `r2_newdata()` take the observed values from `newdata$y`, whatever the response is called. R matches `$y` partially, so without a column `y` they silently use a column such as `yield`. If no column name starts with `y`, `rmse_newdata()` stops with an error and `r2_newdata()` returns 0 with a warning.
 
-The R² functions use a wrong formula. Each observation contributes `1/N - ss_e / ss_y`, and `r2_loo()` and `r2_newdata()` add these contributions. Without weights, `ss_e` is the squared error summed over all posterior draws, so the result grows with the number of draws. With weights, `ss_e` is a weighted mean of squared errors of predictive draws that include the noise, so a correct model gets a value close to -1.
+The R² functions use a wrong formula. Each observation contributes `1/N - ss_e / ss_y`, and `r2_loo()` and `r2_newdata()` add these contributions. Without weights, `ss_e` is the squared error summed over all posterior draws, so the result grows with the number of draws. With weights, `ss_e` is a weighted mean of squared errors of predictive draws that include the noise. In this example that puts the result near -1.
 
 | Function | bayeshear | Correct value | Source of the correct value |
 |---|---|---|---|
 | `r2_loo()` | -1.00 | -0.002 | `brms::loo_R2()` |
 | `r2_newdata()` | -7,975 | 0 | `brms::bayes_R2(newdata = ...)` |
-| `sum(r2(y, yrep))` | -8,009 | -0.002 | `brms::loo_R2()` |
-| `sum(r2(y, yrep, weights))`, uniform weights | -1.00 | -0.002 | `brms::loo_R2()` |
+| `sum(r2(y, yrep))` | -8,009 | | |
+| `sum(r2(y, yrep, weights))`, uniform weights | -1.00 | | |
 
 An intercept-only model explains none of the variance, so its correct R² is about 0.
 
@@ -36,36 +36,36 @@ The tests in `tests/testthat/test-predictive_metrics.R` expect these wrong value
 
 ## Other known defects
 
-- `bad_pareto_ks()` uses a fixed threshold of 0.7. loo uses `min(1 - 1/log10(S), 0.7)`, where S is the number of draws. With fewer than about 2,150 draws the loo threshold is lower (0.667 at 1,000 draws), so `bad_pareto_ks()` counts too few bad values.
-- `custom_loo_object()` labels any criterion as `elpd_loo`, so that `loo::loo_compare()` accepts it. `loo_compare()` ranks a larger elpd as better. For an error metric such as RMSE, `custom_loo_compare()` therefore ranks the worst model first.
-- The test suite fails: `[ FAIL 8 | WARN 0 | SKIP 0 | PASS 37 ]`. Two failures call `variable_percentile()`, which no longer exists; the function is now `variable_true_percentile()`. The other six compare against stored numbers that current brms and loo no longer produce.
-- `R CMD check` stops at the dependency step, because it requires the suggested packages caret and randomForest. The package code does not use them.
-- `divergent_transitions()` calls `bayesplot::nuts_params()`, but `DESCRIPTION` does not declare bayesplot.
+- `bad_pareto_ks()` uses a default threshold of 0.7. loo uses `min(1 - 1/log10(S), 0.7)`, where S is the number of draws. With fewer than about 2,150 draws the loo threshold is lower (0.667 at 1,000 draws). `bad_pareto_ks()` then can count too few bad values, because it misses every k between the loo threshold and 0.7.
+- `custom_loo_object()` labels any criterion as `elpd_loo`, so that `loo::loo_compare()` accepts it. `loo_compare()` treats the largest value as best. For an error such as RMSE it therefore puts the model with the largest error first. With loo 2.10.1, `custom_loo_compare()` keeps the input order and returns `NA` for every difference and standard error.
+- The test suite fails with brms 2.23.0, loo 2.10.1 and posterior 1.7.0: `[ FAIL 8 | WARN 0 | SKIP 0 | PASS 37 ]`. Two failures call `variable_percentile()`, which no longer exists; the function is now `variable_true_percentile()`. The other six compare against stored numbers that these versions no longer produce.
+- `R CMD check` stops at the dependency step when caret and randomForest are not installed. They are suggested packages, and the package code does not use them.
+- `divergent_transitions()` calls `bayesplot::nuts_params()`, but `DESCRIPTION` does not declare bayesplot. It works only because brms imports bayesplot.
 - `rmse_loo()`, `r2_loo()`, `bad_pareto_ks()` and `pareto_k_values()` call the internal function `brms:::.psis()`. A brms release can change or remove it without notice.
 
 ## What to use instead
 
 | bayeshear function | Replacement |
 |---|---|
-| `elpd_loo()` | `loo::loo()` or `brms::loo()` |
+| `elpd_loo()` | `brms::loo(fit)` |
 | `elpd_newdata()` | `loo::elpd(brms::log_lik(fit, newdata = newdata))` |
-| `rmse_loo()` | `loo::loo_predictive_metric(brms::posterior_epred(fit), y, brms::log_lik(fit), metric = "rmse")` |
-| `rmse_newdata()` | `sqrt(mean((y_new - colMeans(brms::posterior_epred(fit, newdata = newdata)))^2))` |
-| `rmse()` | `loo::loo_predictive_metric()` with `metric = "rmse"`, or base R |
-| `r2_loo()` | `brms::loo_R2()` |
+| `rmse_loo()` | `loo::loo_predictive_metric()`, see the code below |
+| `rmse_newdata()` | `sqrt(mean((brms::get_y(fit, newdata = newdata) - colMeans(brms::posterior_epred(fit, newdata = newdata)))^2))` |
+| `rmse()` | `sqrt(colMeans(sweep(yrep, 2, y)^2))`, or with weights `sqrt(colSums(weights * sweep(yrep, 2, y)^2) / colSums(weights))` |
+| `r2_loo()` | `brms::loo_R2(fit)` |
 | `r2_newdata()` | `brms::bayes_R2(fit, newdata = newdata)` |
-| `r2()` | `brms::loo_R2()` or `brms::bayes_R2()` |
+| `r2()` | `brms::loo_R2(fit)`, or `brms::bayes_R2(mu, y = y)` for a matrix `mu` of expected-value draws |
 | `custom_loo_object()` | none |
-| `custom_loo_compare()` | `loo::loo_compare()` for elpd; none for other criteria |
-| `bad_pareto_ks()` | `length(loo::pareto_k_ids(loo::loo(fit)))`, or `loo::pareto_k_table()` |
-| `pareto_k_values()` | `loo::pareto_k_values(loo::loo(fit))` |
-| `divergent_transitions()` | `brms::nuts_params(fit)`, then sum the `divergent__` rows |
-| `sampling_time()` | `rstan::get_elapsed_time(fit$fit)` for rstan fits |
-| `post_warmup_samples()` | `posterior::ndraws()` or `brms::ndraws()` |
-| `get_y()` | `brms::get_y()` |
-| `posterior_quantiles()` | `posterior::summarise_draws(x, ~quantile(.x, probs = probs))` |
-| `variable_summary()` | `posterior::summarise_draws()` |
-| `variable_distance()` | `posterior::extract_variable()` and base R |
+| `custom_loo_compare()` | `loo::loo_compare(brms::loo(fit), brms::loo(fit2))` for elpd; none for other criteria |
+| `bad_pareto_ks()` | `length(loo::pareto_k_ids(brms::loo(fit)))` |
+| `pareto_k_values()` | `loo::pareto_k_values(brms::loo(fit))` |
+| `divergent_transitions()` | `mean(brms::nuts_params(fit, pars = "divergent__")$Value)`; for `absolute = TRUE`, `sum(brms::nuts_params(fit, pars = "divergent__")$Value)` |
+| `sampling_time()` | see the code below |
+| `post_warmup_samples()` | `brms::ndraws(fit)` |
+| `get_y()` | `brms::get_y(fit)` |
+| `posterior_quantiles()` | `posterior::summarise_draws(fit, ~quantile(.x, probs = probs))` |
+| `variable_summary()` | `posterior::summarise_draws(fit, fun)` |
+| `variable_distance()` | `fun(posterior::extract_variable(fit, variable), reference)` |
 | `variable_bias()` | `mean(draws) - reference` |
 | `variable_rmse()` | `sqrt(mean((draws - reference)^2))` |
 | `variable_mae()` | `mean(abs(draws - reference))` |
@@ -73,19 +73,45 @@ The tests in `tests/testthat/test-predictive_metrics.R` expect these wrong value
 | `variable_true_percentile()` | `mean(draws < reference)` |
 | `variable_pos_prob()` | `mean(draws > 0)` |
 
-`loo::loo_predictive_metric()` also computes MAE and MSE (`metric = "mae"` or `"mse"`). For convergence diagnostics, use `brms::rhat()` or `posterior::summarise_draws()`.
+In the table, `y`, `yrep`, `weights`, `draws`, `reference`, `fun`, `probs` and `variable` are the arguments of the bayeshear function, and `newdata` is a data frame of new observations. `NAMESPACE` also exports the S3 methods by their full names (the `.brmsfit`, `.stanfit`, `.psis`, `.draws` and `.default` methods). Each method follows the row of its generic. The two Pareto functions also accept an existing PSIS or loo object directly in place of `brms::loo(fit)`.
+
+The LOO RMSE in the first table came from this code:
+
+```r
+ll <- brms::log_lik(fit)
+r_eff <- loo::relative_eff(
+  exp(ll),
+  chain_id = rep(seq_len(brms::nchains(fit)), each = brms::ndraws(fit) / brms::nchains(fit))
+)
+loo::loo_predictive_metric(brms::posterior_epred(fit), brms::get_y(fit), ll,
+                           metric = "rmse", r_eff = r_eff)
+```
+
+`loo::loo_predictive_metric()` also computes MAE and MSE (`metric = "mae"` or `"mse"`). `rmse()` computed one RMSE per observation over the draws. The aggregate LOO RMSE is the code above.
+
+`r2()` returned one term per observation, and these terms do not add up to an R². `brms::bayes_R2(mu, y = y)` returns one R² per draw.
+
+`sampling_time()` summed the elapsed times of all chains. By default it divided them by the number of warmup and sampling iterations of all chains. For an rstan fit:
+
+```r
+# sampling_time(fit, absolute = TRUE)
+colSums(rstan::get_elapsed_time(fit$fit))
+# sampling_time(fit)
+colSums(rstan::get_elapsed_time(fit$fit)) /
+  (c(fit$fit@sim$warmup, fit$fit@sim$iter - fit$fit@sim$warmup) * fit$fit@sim$chains)
+```
+
+For convergence diagnostics, use `brms::rhat()` or `posterior::summarise_draws()`.
 
 `loo::pareto_k_ids()` and `loo::pareto_k_table()` use the sample-size-dependent threshold. `posterior::pareto_khat_threshold()` returns `1 - 1/log10(S)` without the cap at 0.7, so it gives a higher threshold than loo when S is above about 2,150.
 
 ## Installing the last version
 
-To reproduce old work, install the last commit that changes package code:
+To reproduce old work, install the last commit that changes package code. It installs version 0.3.0.9000:
 
 ```r
 remotes::install_github("sims1253/bayeshear@ae5cae537c154a8ccc0ff50a7299a331b4e2fac2")
 ```
-
-The package also needs bayesplot for `divergent_transitions()`. Install it separately.
 
 ## License
 
