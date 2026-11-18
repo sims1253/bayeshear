@@ -19,7 +19,7 @@ The numbers in this section come from one reproduction: 1,000 observations from 
 | `rmse_loo()` | 1,402 | 1.04 | `loo::loo_predictive_metric()`, see the code below the replacement table |
 | `rmse_newdata()` | 1,405 | 1.04 | RMSE of the posterior mean prediction |
 
-`rmse_newdata()` and `r2_newdata()` take the observed values from `newdata$y`, whatever the response is called. R matches `$y` partially, so without a column `y` they silently use a column such as `yield`. If no column name starts with `y`, `rmse_newdata()` stops with an error and `r2_newdata()` returns 0 with a warning.
+`rmse_newdata()` and `r2_newdata()` take the observed values from `newdata$y`, whatever the response is called. R matches `$y` partially, so without a column `y` they use the one column whose name starts with `y`, such as `yield`. If no column name starts with `y`, or more than one does, `rmse_newdata()` stops with an error and `r2_newdata()` returns 0 with a warning.
 
 The R² functions use a wrong formula. Each observation contributes `1/N - ss_e / ss_y`, and `r2_loo()` and `r2_newdata()` add these contributions. Without weights, `ss_e` is the squared error summed over all posterior draws, so the result grows with the number of draws. With weights, `ss_e` is a weighted mean of squared errors of predictive draws that include the noise. In this example that puts the result near -1.
 
@@ -37,7 +37,7 @@ The tests in `tests/testthat/test-predictive_metrics.R` expect these wrong value
 ## Other known defects
 
 - `bad_pareto_ks()` uses a default threshold of 0.7. loo uses `min(1 - 1/log10(S), 0.7)`, where S is the number of draws. With fewer than about 2,150 draws the loo threshold is lower (0.667 at 1,000 draws). `bad_pareto_ks()` then can count too few bad values, because it misses every k between the loo threshold and 0.7.
-- `custom_loo_object()` labels any criterion as `elpd_loo`, so that `loo::loo_compare()` accepts it. `loo_compare()` treats the largest value as best. For an error such as RMSE it therefore puts the model with the largest error first. With loo 2.10.1, `custom_loo_compare()` keeps the input order and returns `NA` for every difference and standard error.
+- `custom_loo_object()` labels any criterion as `elpd_loo`, so that `loo::loo_compare()` accepts it. `loo_compare()` treats the largest value as best. For an error such as RMSE it therefore puts the model with the largest error first. With loo 2.10.1, `custom_loo_compare()` can keep the input order and return `NA` for every difference and standard error, or assign the differences to the wrong models, as it does for models named `"1"` and `"2"`.
 - The test suite fails with brms 2.23.0, loo 2.10.1 and posterior 1.7.0: `[ FAIL 8 | WARN 0 | SKIP 0 | PASS 37 ]`. Two failures call `variable_percentile()`, which no longer exists; the function is now `variable_true_percentile()`. The other six compare against stored numbers that these versions no longer produce.
 - `R CMD check` stops at the dependency step when caret and randomForest are not installed. They are suggested packages, and the package code does not use them.
 - `divergent_transitions()` calls `bayesplot::nuts_params()`, but `DESCRIPTION` does not declare bayesplot. It works only because brms imports bayesplot.
@@ -65,7 +65,7 @@ The tests in `tests/testthat/test-predictive_metrics.R` expect these wrong value
 | `get_y()` | `brms::get_y(fit)` |
 | `posterior_quantiles()` | `posterior::summarise_draws(fit, ~quantile(.x, probs = probs))` |
 | `variable_summary()` | `posterior::summarise_draws(fit, fun)` |
-| `variable_distance()` | `fun(posterior::extract_variable(fit, variable), reference)` |
+| `variable_distance()` | `fun(posterior::extract_variable(fit, variable), reference)`, once for each variable and its reference |
 | `variable_bias()` | `mean(draws) - reference` |
 | `variable_rmse()` | `sqrt(mean((draws - reference)^2))` |
 | `variable_mae()` | `mean(abs(draws - reference))` |
@@ -73,7 +73,7 @@ The tests in `tests/testthat/test-predictive_metrics.R` expect these wrong value
 | `variable_true_percentile()` | `mean(draws < reference)` |
 | `variable_pos_prob()` | `mean(draws > 0)` |
 
-In the table, `y`, `yrep`, `weights`, `draws`, `reference`, `fun`, `probs` and `variable` are the arguments of the bayeshear function, and `newdata` is a data frame of new observations. `NAMESPACE` also exports the S3 methods by their full names (the `.brmsfit`, `.stanfit`, `.psis`, `.draws` and `.default` methods). Each method follows the row of its generic. The two Pareto functions also accept an existing PSIS or loo object directly in place of `brms::loo(fit)`.
+In the table, `y`, `yrep`, `weights`, `draws`, `reference`, `fun`, `probs` and `variable` are the arguments of the bayeshear function, and `newdata` is a data frame of new observations. `NAMESPACE` also exports the S3 methods by their full names (the `.brmsfit`, `.stanfit`, `.psis`, `.draws` and `.default` methods). The rows are written for a `brmsfit`. Not all of them work on a raw `stanfit`; `brms::ndraws()` does not, for example. The two replacement Pareto functions, `loo::pareto_k_ids()` and `loo::pareto_k_values()`, also accept an existing PSIS or PSIS-LOO object in place of `brms::loo(fit)`.
 
 The LOO RMSE in the first table came from this code:
 
@@ -87,11 +87,11 @@ loo::loo_predictive_metric(brms::posterior_epred(fit), brms::get_y(fit), ll,
                            metric = "rmse", r_eff = r_eff)
 ```
 
-`loo::loo_predictive_metric()` also computes MAE and MSE (`metric = "mae"` or `"mse"`). `rmse()` computed one RMSE per observation over the draws. The aggregate LOO RMSE is the code above.
+Both RMSE replacements need a fit with one numeric response, for which `brms::posterior_epred()` returns a matrix of draws by observations. They do not work for ordinal or categorical fits. `rmse()` computed one RMSE per observation over the draws. The aggregate LOO RMSE is the code above.
 
 `r2()` returned one term per observation, and these terms do not add up to an R². `brms::bayes_R2(mu, y = y)` returns one R² per draw.
 
-`sampling_time()` summed the elapsed times of all chains. By default it divided them by the number of warmup and sampling iterations of all chains. For an rstan fit:
+`sampling_time()` summed the elapsed times of all chains. By default it divided them by the number of warmup and sampling iterations of all chains. For a `brmsfit` fitted with rstan:
 
 ```r
 # sampling_time(fit, absolute = TRUE)
@@ -100,8 +100,6 @@ colSums(rstan::get_elapsed_time(fit$fit))
 colSums(rstan::get_elapsed_time(fit$fit)) /
   (c(fit$fit@sim$warmup, fit$fit@sim$iter - fit$fit@sim$warmup) * fit$fit@sim$chains)
 ```
-
-For convergence diagnostics, use `brms::rhat()` or `posterior::summarise_draws()`.
 
 `loo::pareto_k_ids()` and `loo::pareto_k_table()` use the sample-size-dependent threshold. `posterior::pareto_khat_threshold()` returns `1 - 1/log10(S)` without the cap at 0.7, so it gives a higher threshold than loo when S is above about 2,150.
 
